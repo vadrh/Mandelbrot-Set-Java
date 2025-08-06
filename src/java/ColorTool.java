@@ -14,4 +14,9 @@ public class ColorTool {
     private static int interpolate(int v1, int v2, float f) {
         return (int) ((1 - f) * v1 + f * v2);
     }
+
+    public static Color getHSBColor(double  iterations, double maxIterations, double hueCycle) {
+        float hue = (float) ((iterations / maxIterations * hueCycle) % 1.0f);
+        return Color.getHSBColor(hue, 1.0f, iterations < maxIterations ? 1.0f : 0.0f);
+    }
 }

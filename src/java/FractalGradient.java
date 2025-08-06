@@ -15,8 +15,24 @@ public class FractalGradient {
     }
 
     private void init() {
-        Color[] colors = new Color[]{new Color(10, 7, 100), new Color(50, 150, 200), new Color(200, 238, 30), new Color(237, 255, 255), new Color(255, 170, 0), Color.black};
-        float[] fractions = new float[]{0.0f, 0.14f, 0.36f, 0.62f, 0.9425f, 0.98f};
+        Color[] colors = new Color[]{
+            new Color(66, 30, 15),    // brown‑dark
+            new Color(25, 7, 26),     // dark purple
+            new Color(248, 201, 95),  // gold
+            new Color(255, 170, 0),   // orange
+            new Color(204, 128, 0),   // dark orange
+            new Color(153, 87, 0),    // brownish
+            new Color(106, 52, 3)     // very dark brown
+        };
+        float[] fractions = {
+            0.0f,
+            0.16f,
+            0.42f,
+            0.6425f,
+            0.8575f,
+            0.95f,
+            1.0f
+        };
         int size = gradientColors.length;
 
         for (int i = 0; i < colors.length; i++) {

@@ -1,10 +1,8 @@
 
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Robot;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -19,6 +17,7 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     private double zoom = 1;
     private double minX, minY, maxX, maxY;
+    private double zoomAnimationValue = 1;
 
     public Point2D minPoint2D() {
         return new Point2D.Double(minX, minY);
@@ -35,10 +34,10 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         setLayout(null);
 
         minX = -2;
-        minY = (float) -1.125;
+        minY = (minX/(getWidth()/2))*(getHeight()/2);
 
         maxX = 2;
-        maxY = (float) 1.125;
+        maxY = (maxX/(getWidth()/2))*(getHeight()/2);
 
         colors = new Color[this.getHeight() + 1][this.getWidth() + 1];
 
@@ -74,13 +73,17 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     }
 
     public void reset() {
-        GlobalVariables.MAX_ITERATIONS = 100;
+        GlobalVariables.MAX_ITERATIONS = 150;
+
         zoom = 1;
+
         minX = -2;
-        minY = (float) -1.125;
+        minY = (minX/(getWidth()/2))*(getHeight()/2);
 
         maxX = 2;
-        maxY = (float) 1.125;
+        maxY = (maxX/(getWidth()/2))*(getHeight()/2);
+
+        zoomAnimationValue = 1;
 
         calculateValues();
     }
@@ -108,9 +111,23 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     }
 
     private void calculateValues() {
-        GlobalVariables.MAX_ITERATIONS = 300 * Math.pow((Math.log(zoom)), 1.5) + 100;
+        GlobalVariables.MAX_ITERATIONS = 150 * Math.pow((Math.sqrt(Math.sqrt(Math.sqrt(zoom)))), 1.5);
+        System.out.println(GlobalVariables.MAX_ITERATIONS);
         ScreenUpdater.getUpdater().update();
         repaint();
+    }
+
+    public void runZoom(Point2D zoomPoint) {
+        zoomAnimationValue = 1;
+        while (this.zoom <= 3.985651829603406E13) {
+            zoomOnPlane(zoomPoint.getX(), zoomPoint.getY(), 1);
+            zoom(getWidth() / 2, getHeight() / 2, zoomAnimationValue);
+            this.zoom *= zoomAnimationValue += 0.05d;
+            System.out.println(this.zoom);
+            calculateValues();
+        }
+
+        reset();
     }
 
     @Override
@@ -132,18 +149,22 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     }
 
+    private void zoomOnPlane(double x, double y, double zoomFactor) {
+        double width = (maxX - minX) / zoomFactor;
+        double height = (maxY - minY) / zoomFactor;
+
+        minX = x - width / 2;
+        minY = y - height / 2;
+
+        maxX = x + width / 2;
+        maxY = y + height / 2;
+    }
+
     private void zoom(double x, double y, double zoomFactor) {
         double centerX = minX + (x / ((double) getWidth())) * (maxX - minX);
         double centerY = minY + ((y) / ((double) getHeight())) * (maxY - minY);
 
-        double width = (maxX - minX) / zoomFactor;
-        double height = (maxY - minY) / zoomFactor;
-
-        minX = centerX - width / 2;
-        minY = centerY - height / 2;
-
-        maxX = centerX + width / 2;
-        maxY = centerY + height / 2;
+        zoomOnPlane(centerX, centerY, zoomFactor);
     }
 
     @Override
