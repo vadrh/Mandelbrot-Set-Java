@@ -6,8 +6,6 @@ import javax.swing.JFrame;
 
 public class Frame extends JFrame {
 
-    private DrawingCanvas displayPanel;
-
     public Frame() {
 
         Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
@@ -18,7 +16,7 @@ public class Frame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setUndecorated(true);
 
-        displayPanel = new DrawingCanvas(size);
+        DrawingCanvas displayPanel = new DrawingCanvas(size);
 
         double gradientLength = GlobalVariables.MAX_ITERATIONS;
         FractalGradient gradient = new FractalGradient(gradientLength);

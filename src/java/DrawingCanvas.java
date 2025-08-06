@@ -11,6 +11,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
@@ -61,13 +62,15 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         Graphics2D g2 = (Graphics2D) g;
 
         super.paint(g2);
+        BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
-                g2.setColor(colors[y][x]);
-                g2.drawLine(x, y, x, y);
+                image.setRGB(x, y, colors[y][x].getRGB());
             }
         }
+
+        g2.drawImage(image, 0, 0, null);
     }
 
     public void reset() {
@@ -85,7 +88,7 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         int value = e.getWheelRotation();
-        double zoomFactor = 16;
+        double zoomFactor = 2;
         if (value < 0) {
             double x = e.getX();
             double y = e.getY();
@@ -99,13 +102,9 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
             zoom(x, y, zoomFactor);
         }
         zoom *= zoomFactor;
-        System.out.println(zoom);
         calculateValues();
-        try {
-            new Robot().mouseMove(getWidth() / 2, (getHeight() / 2));
-        } catch (AWTException e1) {
-            e1.printStackTrace();
-        };
+        System.out.println(zoom);
+        System.out.println(GlobalVariables.MAX_ITERATIONS);
     }
 
     private void calculateValues() {

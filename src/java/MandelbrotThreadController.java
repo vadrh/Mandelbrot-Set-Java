@@ -5,7 +5,7 @@ import java.util.List;
 
 public class MandelbrotThreadController {
 
-    private static final int THREAD_COUNT = 6;
+    private static final int THREAD_COUNT = 12;
     private FractalGradient gradient;
     private DrawingCanvas canvas;
 
