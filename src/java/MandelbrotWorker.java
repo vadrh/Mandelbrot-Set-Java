@@ -80,7 +80,7 @@ public class MandelbrotWorker implements Runnable {
     }
 
     private Color getHSB(double iterations) {
-        return ColorTool.getHSBColor(iterations, GlobalVariables.MAX_ITERATIONS, 6);
+        return ColorTool.getHSBColor(iterations, GlobalVariables.MAX_ITERATIONS, 2);
     }
 
     enum COLOR_SETTING {
