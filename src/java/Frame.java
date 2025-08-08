@@ -9,12 +9,13 @@ public class Frame extends JFrame {
 
     public Frame() {
 
-        Dimension size = new Dimension(500,500);
+        Dimension size = new Dimension(1000,1000);
 
         setSize(size);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setUndecorated(true);
 
         DrawingCanvas displayPanel = new DrawingCanvas(size);
 

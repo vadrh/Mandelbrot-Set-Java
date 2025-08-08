@@ -5,13 +5,16 @@ import java.awt.Color;
 public class MandelbrotWorker implements Runnable {
 
     private static final double LN2 = Math.log(2);
+    private final COLOR_SETTING COLOR_MODE = COLOR_SETTING.HSB;
     private DrawingCanvas canvas;
+    private FractalGradient gradient;
     private Point2D minPoint2D, maxPoint2D, minScreenPoint2D, maxScreenPoint2D;
     private float divisonFactor;
 
-    public MandelbrotWorker(DrawingCanvas canvas, Point2D minPoint2D,
+    public MandelbrotWorker(DrawingCanvas canvas, FractalGradient gradient, Point2D minPoint2D,
             Point2D maxPoint2D, Point2D minScreenPoint2D, Point2D maxScreenPoint2D, int divisonFactor) {
         this.canvas = canvas;
+        this.gradient = gradient;
         this.minPoint2D = minPoint2D;
         this.maxPoint2D = maxPoint2D;
         this.minScreenPoint2D = minScreenPoint2D;
@@ -51,17 +54,37 @@ public class MandelbrotWorker implements Runnable {
         if (iterations < GlobalVariables.MAX_ITERATIONS) {
             double log_zn = Math.log(x2 + y2) / 2;
             double nu = Math.log(log_zn / Math.log(2)) / LN2;
-
             iterations += 1 - nu;
-            color = ColorTool.getHSBColor(iterations, GlobalVariables.MAX_ITERATIONS, 6);
+
+            color = getColor(iterations);
         } else {
             color = Color.BLACK;
         }
-
-        // Color c1 = gradient.getColors((int) iterations);
-        // Color c2 = gradient.getColors(((int) (iterations)) + 1);
-        // Color c = ColorTool.linearInterpolate(c1, c2, (float) (iterations % 1));
         canvas.setColor(Px, Py, color);
-        // canvas.setColor(Px, Py, gradient.getColors((int) iterations));
+    }
+
+    private Color getColor(double iterations) {
+        switch (COLOR_MODE) {
+            case HSB:
+                return getHSB(iterations);
+            case GRADIENT:
+                return getGradient(iterations);
+        }
+        return null;
+    }
+
+    private Color getGradient(double iterations) {
+        Color c1 = gradient.getColors((int) iterations);
+        Color c2 = gradient.getColors(((int) (iterations)) + 1);
+        return ColorTool.linearInterpolate(c1, c2, (float) (iterations % 1));
+    }
+
+    private Color getHSB(double iterations) {
+        return ColorTool.getHSBColor(iterations, GlobalVariables.MAX_ITERATIONS, 6);
+    }
+
+    enum COLOR_SETTING {
+        GRADIENT,
+        HSB;
     }
 }

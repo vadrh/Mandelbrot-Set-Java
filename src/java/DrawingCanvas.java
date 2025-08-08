@@ -1,8 +1,11 @@
 
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -91,7 +94,7 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         int value = e.getWheelRotation();
-        double zoomFactor = 2;
+        double zoomFactor = 1.1;
         if (value < 0) {
             double x = e.getX();
             double y = e.getY();
@@ -122,7 +125,7 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         while (this.zoom <= 3.985651829603406E13) {
             zoomOnPlane(zoomPoint.getX(), zoomPoint.getY(), 1);
             zoom(getWidth() / 2, getHeight() / 2, zoomAnimationValue);
-            this.zoom *= zoomAnimationValue += 0.05d;
+            this.zoom *= zoomAnimationValue += 0.01d;
             System.out.println(this.zoom);
             calculateValues();
         }
@@ -158,6 +161,12 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
         maxX = x + width / 2;
         maxY = y + height / 2;
+
+        try {
+            Dimension monitor = Toolkit.getDefaultToolkit().getScreenSize();
+            new Robot().mouseMove((int)(monitor.getWidth()/2), (int)(monitor.getHeight()/2));
+        } catch (AWTException ex) {
+        }
     }
 
     private void zoom(double x, double y, double zoomFactor) {

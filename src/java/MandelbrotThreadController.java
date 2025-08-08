@@ -15,11 +15,9 @@ public class MandelbrotThreadController {
     }
 
     public void update() throws InterruptedException {
-        // gradient.updateGradientSize(GlobalVariables.MAX_ITERATIONS);
+        gradient.updateGradientSize(GlobalVariables.MAX_ITERATIONS);
         Point2D minPoint2D = canvas.minPoint2D();
         Point2D maxPoint2D = canvas.maxPoint2D();
-        System.out.println(minPoint2D);
-        System.out.println(maxPoint2D);
         runThreads(minPoint2D, maxPoint2D);
     }
 
@@ -33,7 +31,7 @@ public class MandelbrotThreadController {
             localMax2D = new Point2D.Double(localMin2D.getX() + dX, maxPoint2D.getY());
             localMaxScreen2D = new Point2D.Double(localMinScreen2D.getX() + screenDX, canvas.getHeight());
 
-            Thread thread = new Thread(new MandelbrotWorker(canvas, localMin2D, localMax2D, localMinScreen2D, localMaxScreen2D, THREAD_COUNT));
+            Thread thread = new Thread(new MandelbrotWorker(canvas, gradient, localMin2D, localMax2D, localMinScreen2D, localMaxScreen2D, THREAD_COUNT));
             threadList.add(thread);
 
             thread.start();
@@ -43,7 +41,7 @@ public class MandelbrotThreadController {
 
         }
 
-        Thread thread = new Thread(new MandelbrotWorker(canvas, localMin2D, maxPoint2D, localMinScreen2D, new Point2D.Double(canvas.getWidth(), canvas.getHeight()), THREAD_COUNT));
+        Thread thread = new Thread(new MandelbrotWorker(canvas, gradient, localMin2D, maxPoint2D, localMinScreen2D, new Point2D.Double(canvas.getWidth(), canvas.getHeight()), THREAD_COUNT));
         threadList.add(thread);
 
         thread.start();
