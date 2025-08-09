@@ -1,3 +1,4 @@
+package com.mand;
 
 import java.awt.AWTException;
 import java.awt.Color;
@@ -21,6 +22,7 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     private double zoom = 1;
     private double minX, minY, maxX, maxY;
     private double zoomAnimationValue = 1;
+    private boolean animationRunning = false;
 
     public Point2D minPoint2D() {
         return new Point2D.Double(minX, minY);
@@ -37,10 +39,10 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         setLayout(null);
 
         minX = -2;
-        minY = (minX/(getWidth()/2))*(getHeight()/2);
+        minY = (minX / (getWidth() / 2)) * (getHeight() / 2);
 
         maxX = 2;
-        maxY = (maxX/(getWidth()/2))*(getHeight()/2);
+        maxY = (maxX / (getWidth() / 2)) * (getHeight() / 2);
 
         colors = new Color[this.getHeight() + 1][this.getWidth() + 1];
 
@@ -81,12 +83,14 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         zoom = 1;
 
         minX = -2;
-        minY = (minX/(getWidth()/2))*(getHeight()/2);
+        minY = (minX / (getWidth() / 2)) * (getHeight() / 2);
 
         maxX = 2;
-        maxY = (maxX/(getWidth()/2))*(getHeight()/2);
+        maxY = (maxX / (getWidth() / 2)) * (getHeight() / 2);
 
         zoomAnimationValue = 1;
+
+        animationRunning = false;
 
         calculateValues();
     }
@@ -108,29 +112,23 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
             zoom(x, y, zoomFactor);
         }
         zoom *= zoomFactor;
-        calculateValues();
-        System.out.println(zoom);
-        System.out.println(GlobalVariables.MAX_ITERATIONS);
     }
 
     private void calculateValues() {
         GlobalVariables.MAX_ITERATIONS = 150 * Math.pow((Math.sqrt(Math.sqrt(Math.sqrt(zoom)))), 1.5);
-        System.out.println(GlobalVariables.MAX_ITERATIONS);
         ScreenUpdater.getUpdater().update();
         repaint();
     }
 
     public void runZoom(Point2D zoomPoint) {
         zoomAnimationValue = 1;
-        while (this.zoom <= 3.985651829603406E13) {
-            zoomOnPlane(zoomPoint.getX(), zoomPoint.getY(), 1);
+        animationRunning = true;
+        while (animationRunning) {
+            moveOnPlane(zoomPoint.getX(), zoomPoint.getY());
             zoom(getWidth() / 2, getHeight() / 2, zoomAnimationValue);
             this.zoom *= zoomAnimationValue += 0.01d;
-            System.out.println(this.zoom);
-            calculateValues();
         }
 
-        reset();
     }
 
     @Override
@@ -144,36 +142,73 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON2) {
-            System.exit(0);
-        } else if (e.getButton() == MouseEvent.BUTTON3) {
-            reset();
+        if(animationRunning)
+            return;
+            
+        switch (e.getButton()) {
+            case MouseEvent.BUTTON1:
+                moveTo(e.getX(), e.getY());
+                break;
+            case MouseEvent.BUTTON2:
+                System.exit(0);
+            case MouseEvent.BUTTON3:
+                reset();
+                break;
+            default:
+                break;
         }
 
     }
 
     private void zoomOnPlane(double x, double y, double zoomFactor) {
-        double width = (maxX - minX) / zoomFactor;
-        double height = (maxY - minY) / zoomFactor;
+        double currentWidth = maxX - minX;
+        double width = currentWidth / zoomFactor;
 
-        minX = x - width / 2;
-        minY = y - height / 2;
+        double currentHeight = maxY - minY;
+        double height = currentHeight / zoomFactor;
 
-        maxX = x + width / 2;
-        maxY = y + height / 2;
+        double dx = (currentWidth - width) / 2;
+        double dy = (currentHeight - height) / 2;
 
-        try {
-            Dimension monitor = Toolkit.getDefaultToolkit().getScreenSize();
-            new Robot().mouseMove((int)(monitor.getWidth()/2), (int)(monitor.getHeight()/2));
-        } catch (AWTException ex) {
-        }
+        minX += dx;
+        minY += dy;
+        maxX -= dx;
+        maxY -= dy;
+
+        calculateValues();
+    }
+
+    private Point2D getClickCoordinates(double x, double y) {
+        double realX = minX + x / getWidth() * (maxX - minX);
+        double realY = minY + y / getHeight() * (maxY - minY);
+
+        return new Point2D.Double(realX, realY);
     }
 
     private void zoom(double x, double y, double zoomFactor) {
-        double centerX = minX + (x / ((double) getWidth())) * (maxX - minX);
-        double centerY = minY + ((y) / ((double) getHeight())) * (maxY - minY);
+        Point2D clickCoord = getClickCoordinates(x, y);
 
-        zoomOnPlane(centerX, centerY, zoomFactor);
+        zoomOnPlane(clickCoord.getX(), clickCoord.getY(), zoomFactor);
+    }
+
+    private void moveOnPlane(double x, double y) {
+        double width = (maxX - minX) / 2;
+        double height = (maxY - minY) / 2;
+
+        minX = x - width;
+        minY = y - height;
+
+        maxX = x + width;
+        maxY = y + height;
+
+        calculateValues();
+    }
+
+    private void moveTo(double x, double y) {
+        Point2D clickCoord = getClickCoordinates(x, y);
+
+        moveOnPlane(clickCoord.getX(), clickCoord.getY());
+
     }
 
     @Override

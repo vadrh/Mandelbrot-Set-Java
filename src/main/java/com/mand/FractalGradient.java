@@ -1,3 +1,4 @@
+package com.mand;
 
 import java.awt.Color;
 
@@ -16,13 +17,13 @@ public class FractalGradient {
 
     private void init() {
         Color[] colors = new Color[]{
-            new Color(0, 1, 20), // brown‑dark
-            new Color(205, 200, 80), // dark purple
-            new Color(248, 251, 95), // gold
-            new Color(255, 170, 0), // orange
-            new Color(204, 128, 0), // dark orange
-            new Color(153, 87, 0), // brownish
-            new Color(106, 52, 3) // very dark brown
+            new Color(0, 1, 20),
+            new Color(205, 200, 80),
+            new Color(248, 251, 95),
+            new Color(255, 170, 0),
+            new Color(204, 128, 0),
+            new Color(153, 87, 0),
+            new Color(106, 52, 3)
         };
         float[] fractions = {
             0.0f,

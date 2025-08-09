@@ -1,3 +1,4 @@
+package com.mand;
 
 public class FloatPoint {
 
