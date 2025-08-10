@@ -19,10 +19,12 @@ import javax.swing.JPanel;
 
 public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMotionListener, MouseListener {
 
+    private BufferedImage image;
     private double zoom = 1;
     private double minX, minY, maxX, maxY;
     private double zoomAnimationValue = 1;
     private boolean animationRunning = false;
+    private double[][] iterations;
 
     public Point2D minPoint2D() {
         return new Point2D.Double(minX, minY);
@@ -31,8 +33,6 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     public Point2D maxPoint2D() {
         return new Point2D.Double(maxX, maxY);
     }
-
-    private Color[][] colors;
 
     public DrawingCanvas(Dimension size) {
         setSize(size);
@@ -44,7 +44,9 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         maxX = 2;
         maxY = (maxX / (getWidth() / 2)) * (getHeight() / 2);
 
-        colors = new Color[this.getHeight() + 1][this.getWidth() + 1];
+        iterations = new double[this.getHeight()][this.getWidth()];
+
+        image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         addMouseWheelListener(this);
         addMouseListener(this);
@@ -52,12 +54,14 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     }
 
-    public void setColors(Color[][] colors) {
-        this.colors = colors;
+    public void setColors(double[][] iterations) {
+        this.iterations = iterations;
     }
 
-    public void setColor(int x, int y, Color color) {
-        colors[y][x] = color;
+    public void setIterations(int x, int y, double iteration, double maxIterations) {
+        iterations[y][x] = iteration;
+        Color color = ColorTool.getColor(iteration, maxIterations);
+        image.setRGB(x, y, color.getRGB());
     }
 
     @Override
@@ -66,13 +70,6 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         Graphics2D g2 = (Graphics2D) g;
 
         super.paint(g2);
-        BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        for (int y = 0; y < getHeight(); y++) {
-            for (int x = 0; x < getWidth(); x++) {
-                image.setRGB(x, y, colors[y][x].getRGB());
-            }
-        }
 
         g2.drawImage(image, 0, 0, null);
     }
@@ -142,9 +139,10 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if(animationRunning)
+        if (animationRunning) {
             return;
-            
+        }
+
         switch (e.getButton()) {
             case MouseEvent.BUTTON1:
                 moveTo(e.getX(), e.getY());

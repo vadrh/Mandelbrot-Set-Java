@@ -1,13 +1,17 @@
 package com.mand;
 
+import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.SwingUtilities;
+
 public class ScreenUpdater {
 
     private static ScreenUpdater updater;
     private MandelbrotThreadController controller;
 
-    public static void createUpdater(FractalGradient gradient, DrawingCanvas canvas) {
+    public static void createUpdater(DrawingCanvas canvas) {
         if (updater == null) {
-            updater = new ScreenUpdater(gradient, canvas);
+            updater = new ScreenUpdater(canvas);
         }
     }
 
@@ -15,17 +19,17 @@ public class ScreenUpdater {
         return updater;
     }
 
-    private ScreenUpdater(FractalGradient gradient, DrawingCanvas canvas) {
-        this.controller = new MandelbrotThreadController(gradient, canvas);
+    private ScreenUpdater(DrawingCanvas canvas) {
+        this.controller = new MandelbrotThreadController(canvas);
     }
 
     public void update() {
-
         try {
             controller.update();
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+
         }
+
     }
 
 }
