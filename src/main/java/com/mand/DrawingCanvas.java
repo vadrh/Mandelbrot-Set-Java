@@ -14,6 +14,8 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JPanel;
 
@@ -24,7 +26,6 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     private double minX, minY, maxX, maxY;
     private double zoomAnimationValue = 1;
     private boolean animationRunning = false;
-    private double[][] iterations;
 
     public Point2D minPoint2D() {
         return new Point2D.Double(minX, minY);
@@ -44,8 +45,6 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         maxX = 2;
         maxY = (maxX / (getWidth() / 2)) * (getHeight() / 2);
 
-        iterations = new double[this.getHeight()][this.getWidth()];
-
         image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         addMouseWheelListener(this);
@@ -54,12 +53,7 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     }
 
-    public void setColors(double[][] iterations) {
-        this.iterations = iterations;
-    }
-
     public void setIterations(int x, int y, double iteration, double maxIterations) {
-        iterations[y][x] = iteration;
         Color color = ColorTool.getColor(iteration, maxIterations);
         image.setRGB(x, y, color.getRGB());
     }
@@ -74,8 +68,11 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
         g2.drawImage(image, 0, 0, null);
     }
 
+    public synchronized void syncRepaint() {
+        repaint();
+    }
+
     public void reset() {
-        GlobalVariables.MAX_ITERATIONS = 150;
 
         zoom = 1;
 
@@ -96,32 +93,24 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
     public void mouseWheelMoved(MouseWheelEvent e) {
         int value = e.getWheelRotation();
         double zoomFactor = 1.1;
-        if (value < 0) {
-            double x = e.getX();
-            double y = e.getY();
-
-            zoom(x, y, zoomFactor);
-        } else if (value > 0) {
-            double x = e.getX();
-            double y = e.getY();
-
+        double x = e.getX();
+        double y = e.getY();
+        if (value > 0) {
             zoomFactor = 1 / zoomFactor;
-            zoom(x, y, zoomFactor);
         }
+        zoom(x, y, zoomFactor);
         zoom *= zoomFactor;
     }
 
     private void calculateValues() {
-        GlobalVariables.MAX_ITERATIONS = 150 * Math.pow((Math.sqrt(Math.sqrt(Math.sqrt(zoom)))), 1.5);
         ScreenUpdater.getUpdater().update();
-        repaint();
     }
 
     public void runZoom(Point2D zoomPoint) {
         zoomAnimationValue = 1;
         animationRunning = true;
+        moveOnPlane(zoomPoint.getX(), zoomPoint.getY());
         while (animationRunning) {
-            moveOnPlane(zoomPoint.getX(), zoomPoint.getY());
             zoom(getWidth() / 2, getHeight() / 2, zoomAnimationValue);
             this.zoom *= zoomAnimationValue += 0.01d;
         }

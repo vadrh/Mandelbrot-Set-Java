@@ -1,10 +1,9 @@
 package com.mand;
 
 import java.awt.geom.Point2D;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
-import java.awt.Color;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingUtilities;
 
@@ -14,6 +13,7 @@ public class MandelbrotWorker implements Runnable {
     private DrawingCanvas canvas;
     private Point2D minPoint2D, maxPoint2D, minScreenPoint2D, maxScreenPoint2D;
     private double dx;
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public MandelbrotWorker(DrawingCanvas canvas, Point2D minPoint2D,
             Point2D maxPoint2D, Point2D minScreenPoint2D, Point2D maxScreenPoint2D) {
@@ -25,8 +25,13 @@ public class MandelbrotWorker implements Runnable {
         this.dx = (maxPoint2D.getY() - (minPoint2D.getY())) / (canvas.getHeight());
     }
 
+    public void stop(){
+        isRunning.set(false);
+    }
+
     @Override
     public void run() {
+
         double[] coordX = precompute_coordinates(minPoint2D.getX(), maxPoint2D.getX());
         double[] coordY = precompute_coordinates(minPoint2D.getY(), maxPoint2D.getY());
 
@@ -38,10 +43,25 @@ public class MandelbrotWorker implements Runnable {
             return;
         }
 
+        Set<MandelbrotResult> results = new HashSet<>();
+
         for (int y = startY; y < maxScreenPoint2D.getY(); y++) {
             for (int x = startX; x < maxScreenPoint2D.getX(); x++) {
-                checkDivergence(coordX[x-startX], coordY[y-startY], x, y);
+                MandelbrotResult result = new MandelbrotResult(x, y, coordX[x - startX], coordY[y - startY], 0, 0, 0);
+                results.add(result);
             }
+        }
+        isRunning.set(true);
+        while (!results.isEmpty() && isRunning.get()) {
+            Set<MandelbrotResult> escaped = new HashSet<>();
+            for (MandelbrotResult result : results) {
+                boolean wasEscaped = checkDivergence(result);
+                if (wasEscaped) {
+                    escaped.add(result);
+                }
+            }
+            SwingUtilities.invokeLater(canvas::syncRepaint);
+            results.removeAll(escaped);
         }
     }
 
@@ -55,29 +75,28 @@ public class MandelbrotWorker implements Runnable {
         return coords;
     }
 
-    private boolean checkDivergence(double x0, double y0, int Px, int Py) {
+    private boolean checkDivergence(MandelbrotResult result) {
 
-        double x = 0, y = 0, x2 = 0, y2 = 0;
-        double iterations = 0;
-        double maxIterations = GlobalVariables.MAX_ITERATIONS;
+        double x = result.getX(), y = result.getY(), x2 = x * x, y2 = y * y;
+        double iterations = result.getIterations();
+        double maxIterations = GlobalVariables.MAX_ITERATIONS + iterations;
 
         while (x2 + y2 <= 4 && iterations < maxIterations) {
-            y = (x + x) * y + y0;
-            x = x2 - y2 + x0;
+            y = (x + x) * y + result.getY0();
+            x = x2 - y2 + result.getX0();
             x2 = x * x;
             y2 = y * y;
             iterations++;
 
         }
+        result.setX(x);
+        result.setY(y);
+        result.setIterations(iterations);
+        canvas.setIterations(result.getPx(), result.getPy(), iterations, maxIterations);
 
-        if (iterations < maxIterations) {
-            double log_zn = Math.log(x2 + y2) / 2;
-            double nu = Math.log(log_zn / Math.log(2)) / LN2;
-            iterations += 1 - nu;
-
-        }
-        canvas.setIterations(Px, Py, iterations,maxIterations);
+        GlobalVariables.CURRENT_MAX_ITERATIONS = Math.max(GlobalVariables.CURRENT_MAX_ITERATIONS, maxIterations);
 
         return iterations < maxIterations;
     }
+
 }

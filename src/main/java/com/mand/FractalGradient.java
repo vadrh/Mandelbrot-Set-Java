@@ -11,28 +11,24 @@ public class FractalGradient {
     }
 
     public void updateGradientSize(double size) {
-        gradientColors = new Color[(int) (size + 3)];
+        gradientColors = new Color[(int) (size)];
         init();
     }
 
     private void init() {
         Color[] colors = new Color[]{
-            new Color(0, 1, 20),
-            new Color(205, 200, 80),
-            new Color(248, 251, 95),
-            new Color(255, 170, 0),
-            new Color(204, 128, 0),
-            new Color(153, 87, 0),
-            new Color(106, 52, 3)
+            new Color(0,   7, 100),
+            new Color(32, 107, 203),
+            new Color(237, 255, 255),
+            new Color(255, 170,   0),
+            new Color( 0,   2,   0)
         };
         float[] fractions = {
             0.0f,
             0.16f,
             0.42f,
             0.6425f,
-            0.8575f,
-            0.95f,
-            1.0f
+            0.8575f
         };
         int size = gradientColors.length;
 

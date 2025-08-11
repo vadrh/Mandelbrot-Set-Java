@@ -1,13 +1,13 @@
 package com.mand;
 
-import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.SwingUtilities;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScreenUpdater {
 
     private static ScreenUpdater updater;
     private MandelbrotThreadController controller;
+    private Thread worker = new Thread();
+    private static AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public static void createUpdater(DrawingCanvas canvas) {
         if (updater == null) {
@@ -24,11 +24,31 @@ public class ScreenUpdater {
     }
 
     public void update() {
-        try {
-            controller.update();
-        } catch (InterruptedException ex) {
-
+        System.out.println("test");
+        if (isRunning.get()) {
+            return;
         }
+        isRunning.set(true);
+
+        if (worker != null) {
+            worker.interrupt();
+            System.out.println("state: " + worker.getState());
+            System.out.println("worker before reset " + worker.isAlive());
+            controller.reset();
+            System.out.println("worker after reset " + worker.isAlive());
+        }
+        System.out.println(Thread.activeCount());
+        GlobalVariables.CURRENT_MAX_ITERATIONS = GlobalVariables.MAX_ITERATIONS;
+        worker = new Thread(() -> {
+            try {
+                controller.update();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        });
+        worker.start();
+
+        isRunning.set(false);
 
     }
 

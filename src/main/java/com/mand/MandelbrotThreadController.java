@@ -3,24 +3,46 @@ package com.mand;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MandelbrotThreadController {
 
+    private List<Thread> threadList = new ArrayList<>(GlobalVariables.THREAD_COUNT);
+    private List<MandelbrotWorker> workerList = new ArrayList<>();
     private DrawingCanvas canvas;
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public MandelbrotThreadController(DrawingCanvas canvas) {
         this.canvas = canvas;
     }
 
     public void update() throws InterruptedException {
+        reset();
+
         Point2D minPoint2D = canvas.minPoint2D();
         Point2D maxPoint2D = canvas.maxPoint2D();
         runThreads(minPoint2D, maxPoint2D);
     }
 
-    private void runThreads(Point2D minPoint2D, Point2D maxPoint2D) throws InterruptedException {
-        List<Thread> threadList = new ArrayList<>();
+    public void reset() {
+        if (isRunning.get()) {
+            return;
+        }
+        isRunning.set(true);
+        for (MandelbrotWorker worker : workerList) {
+            worker.stop();
+        }
+        threadList.clear();
+        workerList.clear();
 
+        isRunning.set(false);
+    }
+
+    private void runThreads(Point2D minPoint2D, Point2D maxPoint2D) throws InterruptedException {
+        if (isRunning.get()) {
+            return;
+        }
+        isRunning.set(true);
         double screenDX = (double) (canvas.getWidth()) / GlobalVariables.THREAD_COUNT;
         double dX = (double) (maxPoint2D.getX() - minPoint2D.getX()) / GlobalVariables.THREAD_COUNT;
 
@@ -30,8 +52,11 @@ public class MandelbrotThreadController {
             localMax2D = new Point2D.Double(localMin2D.getX() + dX, maxPoint2D.getY());
             localMaxScreen2D = new Point2D.Double(localMinScreen2D.getX() + screenDX, canvas.getHeight());
 
-            Thread thread = new Thread(new MandelbrotWorker(canvas, localMin2D, localMax2D, localMinScreen2D, localMaxScreen2D), String.valueOf(i+1));
+            MandelbrotWorker worker = new MandelbrotWorker(canvas, localMin2D, localMax2D, localMinScreen2D, localMaxScreen2D);
+
+            Thread thread = new Thread(worker, String.valueOf(i + 1));
             threadList.add(thread);
+            workerList.add(worker);
 
             thread.start();
 
@@ -40,9 +65,7 @@ public class MandelbrotThreadController {
 
         }
 
-        for (Thread thread1 : threadList) {
-            thread1.join();
-        }
+        isRunning.set(false);
 
     }
 
