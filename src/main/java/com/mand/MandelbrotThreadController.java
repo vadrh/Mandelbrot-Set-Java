@@ -65,6 +65,10 @@ public class MandelbrotThreadController {
 
         }
 
+        for(Thread thread :threadList) {
+            thread.join();
+        }
+
         isRunning.set(false);
 
     }

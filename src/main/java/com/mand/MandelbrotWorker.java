@@ -13,7 +13,7 @@ public class MandelbrotWorker implements Runnable {
     private DrawingCanvas canvas;
     private Point2D minPoint2D, maxPoint2D, minScreenPoint2D, maxScreenPoint2D;
     private double dx;
-    private AtomicBoolean isRunning = new AtomicBoolean(false);
+    private static AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public MandelbrotWorker(DrawingCanvas canvas, Point2D minPoint2D,
             Point2D maxPoint2D, Point2D minScreenPoint2D, Point2D maxScreenPoint2D) {
@@ -62,6 +62,9 @@ public class MandelbrotWorker implements Runnable {
             }
             SwingUtilities.invokeLater(canvas::syncRepaint);
             results.removeAll(escaped);
+            if(!isRunning.get()) {
+                System.out.println(isRunning.get());
+            }
         }
     }
 
