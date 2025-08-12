@@ -13,7 +13,6 @@ public class MandelbrotWorker implements Runnable {
     private DrawingCanvas canvas;
     private Point2D minPoint2D, maxPoint2D, minScreenPoint2D, maxScreenPoint2D;
     private double dx;
-    private static AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public MandelbrotWorker(DrawingCanvas canvas, Point2D minPoint2D,
             Point2D maxPoint2D, Point2D minScreenPoint2D, Point2D maxScreenPoint2D) {
@@ -23,10 +22,6 @@ public class MandelbrotWorker implements Runnable {
         this.minScreenPoint2D = minScreenPoint2D;
         this.maxScreenPoint2D = maxScreenPoint2D;
         this.dx = (maxPoint2D.getY() - (minPoint2D.getY())) / (canvas.getHeight());
-    }
-
-    public void stop(){
-        isRunning.set(false);
     }
 
     @Override
@@ -51,8 +46,8 @@ public class MandelbrotWorker implements Runnable {
                 results.add(result);
             }
         }
-        isRunning.set(true);
-        while (!results.isEmpty() && isRunning.get()) {
+
+        while (!results.isEmpty() && MandelbrotThreadController.isRunning.get()) {
             Set<MandelbrotResult> escaped = new HashSet<>();
             for (MandelbrotResult result : results) {
                 boolean wasEscaped = checkDivergence(result);
@@ -62,9 +57,6 @@ public class MandelbrotWorker implements Runnable {
             }
             SwingUtilities.invokeLater(canvas::syncRepaint);
             results.removeAll(escaped);
-            if(!isRunning.get()) {
-                System.out.println(isRunning.get());
-            }
         }
     }
 
@@ -95,9 +87,7 @@ public class MandelbrotWorker implements Runnable {
         result.setX(x);
         result.setY(y);
         result.setIterations(iterations);
-        canvas.setIterations(result.getPx(), result.getPy(), iterations, maxIterations);
-
-        GlobalVariables.CURRENT_MAX_ITERATIONS = Math.max(GlobalVariables.CURRENT_MAX_ITERATIONS, maxIterations);
+        canvas.setIterations(result.getPx(), result.getPy(), iterations, maxIterations,result);
 
         return iterations < maxIterations;
     }

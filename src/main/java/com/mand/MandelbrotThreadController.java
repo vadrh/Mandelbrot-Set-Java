@@ -10,7 +10,7 @@ public class MandelbrotThreadController {
     private List<Thread> threadList = new ArrayList<>(GlobalVariables.THREAD_COUNT);
     private List<MandelbrotWorker> workerList = new ArrayList<>();
     private DrawingCanvas canvas;
-    private AtomicBoolean isRunning = new AtomicBoolean(false);
+    protected static AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public MandelbrotThreadController(DrawingCanvas canvas) {
         this.canvas = canvas;
@@ -24,27 +24,28 @@ public class MandelbrotThreadController {
         runThreads(minPoint2D, maxPoint2D);
     }
 
-    public void reset() {
-        if (isRunning.get()) {
+    public synchronized void reset() {
+        if(!isRunning.get())
             return;
-        }
-        isRunning.set(true);
-        for (MandelbrotWorker worker : workerList) {
-            worker.stop();
-        }
-        threadList.clear();
-        workerList.clear();
 
         isRunning.set(false);
+
+        for(Thread thread :threadList) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        threadList.clear();
+        workerList.clear();
     }
 
     private void runThreads(Point2D minPoint2D, Point2D maxPoint2D) throws InterruptedException {
-        if (isRunning.get()) {
-            return;
-        }
         isRunning.set(true);
         double screenDX = (double) (canvas.getWidth()) / GlobalVariables.THREAD_COUNT;
-        double dX = (double) (maxPoint2D.getX() - minPoint2D.getX()) / GlobalVariables.THREAD_COUNT;
+        double dX = (maxPoint2D.getX() - minPoint2D.getX()) / GlobalVariables.THREAD_COUNT;
 
         Point2D localMin2D = minPoint2D, localMax2D = null, localMinScreen2D = new Point2D.Double(0, 0), localMaxScreen2D = null;
 
@@ -64,12 +65,6 @@ public class MandelbrotThreadController {
             localMinScreen2D = new Point2D.Double(localMaxScreen2D.getX(), 0);
 
         }
-
-        for(Thread thread :threadList) {
-            thread.join();
-        }
-
-        isRunning.set(false);
 
     }
 

@@ -34,7 +34,7 @@ public class Frame extends JFrame {
     }
 
     public static void launch() {
-        SwingUtilities.invokeLater(() -> new Frame());
+         new Frame();
 
     }
 

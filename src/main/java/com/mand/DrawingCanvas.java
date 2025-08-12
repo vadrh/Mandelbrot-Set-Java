@@ -53,8 +53,8 @@ public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseMo
 
     }
 
-    public void setIterations(int x, int y, double iteration, double maxIterations) {
-        Color color = ColorTool.getColor(iteration, maxIterations);
+    public void setIterations(int x, int y, double iteration, double maxIterations, MandelbrotResult result) {
+        Color color = ColorTool.getColor(iteration, maxIterations,result);
         image.setRGB(x, y, color.getRGB());
     }
 
