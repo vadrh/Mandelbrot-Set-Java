@@ -1,29 +1,21 @@
 package com.mand;
 
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Robot;
-import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.JPanel;
 
 public class DrawingCanvas extends JPanel implements MouseWheelListener, MouseListener {
     private BufferedImage image;
     private double minX, minY, maxX, maxY;
-
-
 
     public Point2D minPoint2D() {
         return new Point2D.Double(minX, minY);

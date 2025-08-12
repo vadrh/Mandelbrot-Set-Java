@@ -3,9 +3,6 @@ package com.mand;
 import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.SwingUtilities;
 
 public class MandelbrotWorker implements Runnable {
 
