@@ -50,6 +50,8 @@ public class FractalGradient {
 
             }
         }
+
+        System.out.println(gradientColors[size-1]);
     }
 
     public Color getColors(int index) {

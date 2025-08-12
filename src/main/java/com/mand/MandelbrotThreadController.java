@@ -7,8 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MandelbrotThreadController {
 
-    private List<Thread> threadList = new ArrayList<>(GlobalVariables.THREAD_COUNT);
-    private List<MandelbrotWorker> workerList = new ArrayList<>();
+    private List<Thread> threadList = new ArrayList<>((int) GlobalVariables.THREAD_COUNT);
     private DrawingCanvas canvas;
     protected static AtomicBoolean isRunning = new AtomicBoolean(false);
 
@@ -18,13 +17,17 @@ public class MandelbrotThreadController {
 
     public void update() throws InterruptedException {
         reset();
-
         Point2D minPoint2D = canvas.minPoint2D();
         Point2D maxPoint2D = canvas.maxPoint2D();
+
+        System.out.println("Top Left: " + minPoint2D);
+        System.out.println("Bottom Right: " + maxPoint2D);
+        System.out.println("--------------------------------------------------------------");
+
         runThreads(minPoint2D, maxPoint2D);
     }
 
-    public synchronized void reset() {
+    public void reset() {
         if(!isRunning.get())
             return;
 
@@ -39,11 +42,11 @@ public class MandelbrotThreadController {
         }
 
         threadList.clear();
-        workerList.clear();
     }
 
-    private void runThreads(Point2D minPoint2D, Point2D maxPoint2D) throws InterruptedException {
+    private void runThreads(Point2D minPoint2D, Point2D maxPoint2D){
         isRunning.set(true);
+
         double screenDX = (double) (canvas.getWidth()) / GlobalVariables.THREAD_COUNT;
         double dX = (maxPoint2D.getX() - minPoint2D.getX()) / GlobalVariables.THREAD_COUNT;
 
@@ -54,10 +57,8 @@ public class MandelbrotThreadController {
             localMaxScreen2D = new Point2D.Double(localMinScreen2D.getX() + screenDX, canvas.getHeight());
 
             MandelbrotWorker worker = new MandelbrotWorker(canvas, localMin2D, localMax2D, localMinScreen2D, localMaxScreen2D);
-
-            Thread thread = new Thread(worker, String.valueOf(i + 1));
+            Thread thread = new Thread(worker);
             threadList.add(thread);
-            workerList.add(worker);
 
             thread.start();
 

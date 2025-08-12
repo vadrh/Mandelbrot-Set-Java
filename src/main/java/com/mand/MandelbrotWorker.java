@@ -9,7 +9,6 @@ import javax.swing.SwingUtilities;
 
 public class MandelbrotWorker implements Runnable {
 
-    private static final double LN2 = Math.log(2);
     private DrawingCanvas canvas;
     private Point2D minPoint2D, maxPoint2D, minScreenPoint2D, maxScreenPoint2D;
     private double dx;
@@ -27,21 +26,22 @@ public class MandelbrotWorker implements Runnable {
     @Override
     public void run() {
 
-        double[] coordX = precompute_coordinates(minPoint2D.getX(), maxPoint2D.getX());
-        double[] coordY = precompute_coordinates(minPoint2D.getY(), maxPoint2D.getY());
+        double[] coordX = precomputeCoordinates(minPoint2D.getX(), maxPoint2D.getX());
+        double[] coordY = precomputeCoordinates(minPoint2D.getY(), maxPoint2D.getY());
 
         int startY = (int) minScreenPoint2D.getY();
         int startX = (int) minScreenPoint2D.getX();
+        int screenDX = (int) (maxScreenPoint2D.getX() - startX);
 
-        if (maxScreenPoint2D.getX() - startX > coordX.length) {
+        if (screenDX > coordX.length) {
             canvas.reset();
             return;
         }
 
         Set<MandelbrotResult> results = new HashSet<>();
 
-        for (int y = startY; y < maxScreenPoint2D.getY(); y++) {
-            for (int x = startX; x < maxScreenPoint2D.getX(); x++) {
+        for (int y = startY; y < (int)maxScreenPoint2D.getY(); y++) {
+            for (int x = startX; x < (int) maxScreenPoint2D.getX(); x++) {
                 MandelbrotResult result = new MandelbrotResult(x, y, coordX[x - startX], coordY[y - startY], 0, 0, 0);
                 results.add(result);
             }
@@ -55,12 +55,12 @@ public class MandelbrotWorker implements Runnable {
                     escaped.add(result);
                 }
             }
-            SwingUtilities.invokeLater(canvas::syncRepaint);
+            canvas.repaint();
             results.removeAll(escaped);
         }
     }
 
-    private double[] precompute_coordinates(double min, double max) {
+    private double[] precomputeCoordinates(double min, double max) {
         double[] coords = new double[(int) Math.ceil((max - min) / dx)];
         double val = min;
         for (int i = 0; i < coords.length; i++) {
